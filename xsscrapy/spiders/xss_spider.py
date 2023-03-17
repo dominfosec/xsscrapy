@@ -150,7 +150,7 @@ class XSSspider(CrawlSpider):
                 except IndexError:
                     # In case Disallow: has no value after it
                     continue
-                disallowed = self.base_url+address
+                disallowed = self.base_url+address.decode()
                 disallowed_urls.add(disallowed)
         reqs = [Request(u, callback=self.parse_resp) for u in disallowed_urls if u != self.base_url]
         for r in reqs:
@@ -273,7 +273,7 @@ class XSSspider(CrawlSpider):
         ''' Payload each form input in each input's own request '''
         reqs = []
         vals_urls_meths = []
-        
+
         payload = self.make_payload()
 
         for form in forms:
@@ -496,7 +496,7 @@ class XSSspider(CrawlSpider):
         parsedUrl = urlparse(url)
         fullParams = parsedUrl.query
         #parse_qsl rather than parse_ps in order to preserve order
-        params = parse_qsl(fullParams, keep_blank_values=True) 
+        params = parse_qsl(fullParams, keep_blank_values=True)
         return params
 
     def change_params(self, params, payload):
