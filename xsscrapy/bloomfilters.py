@@ -22,3 +22,18 @@ class BloomURLDupeFilter(BaseDupeFilter):
 
     def close(self, reason):
         self.fingerprints = None
+
+    def request_seen(self, request):
+        parsed_url = urlparse(request.url)
+        path = parsed_url.path
+        query = parsed_url.query
+        params = parse_qsl(query)
+
+        # Create a unique key for each path-parameter combination
+        unique_keys = [f"{path}?{param}={value}" for param, value in params]
+
+        for key in unique_keys:
+            if key in self.fingerprints:
+                return True  # Duplicate found
+            self.fingerprints.add(key)
+        return False  # Not a duplicate
