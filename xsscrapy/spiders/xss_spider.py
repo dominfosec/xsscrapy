@@ -175,12 +175,12 @@ class XSSspider(CrawlSpider):
         except lxml.etree.ParserError:
             self.log('ParserError from lxml on %s' % orig_url)
             return []
-        except lxml.etree.XMLSyntaxError:
-            self.log('XMLSyntaxError from lxml on %s' % orig_url)
+        except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
+            self.log(f"Error parsing {orig_url}: {e}", level=ERROR)
             return []
 
         forms = doc.xpath('//form')
-        payload = self.test_str
+        payload = self.make_payload()
 
         # Grab iframe source urls if they are part of the start_url page
         iframe_reqs = self.make_iframe_reqs(doc, orig_url)
