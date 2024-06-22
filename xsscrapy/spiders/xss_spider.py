@@ -189,19 +189,7 @@ class XSSspider(CrawlSpider):
 
         # Edit a few select headers with injection string and resend request
         # Left room to add more header injections too
-        test_headers = []
-        test_headers.append('Referer')
-        if 'UA' in response.meta:
-            if response.meta['UA'] in body.decode():
-                test_headers.append('User-Agent')
-        header_reqs = self.make_header_reqs(orig_url, payload, test_headers)
-        if header_reqs:
-            reqs += header_reqs
-
-        # Edit the cookies; easier to do this in separate function from make_header_reqs()
-        cookie_reqs = self.make_cookie_reqs(orig_url, payload, 'cookie')
-        if cookie_reqs:
-            reqs += cookie_reqs
+        
 
         # Fill out forms with xss strings
         if forms:
