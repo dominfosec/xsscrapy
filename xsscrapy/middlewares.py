@@ -4,6 +4,8 @@ from pybloom import BloomFilter
 import random
 import re
 from .settings import bloomfilterSize
+from scrapy import signals
+from scrapy.exceptions import NotConfigured
 
 # Filter out duplicate requests with Bloom filters since they're much easier on memory
 #URLS_FORMS_HEADERS = BloomFilter(3000000, 0.00001)
@@ -74,3 +76,32 @@ class InjectedDupeFilter(object):
             spider.log('Sending payloaded %s header' % h)
             HEADERS_SEEN.add(u_h)
             return
+
+class ItemCountMiddleware:
+    def __init__(self, max_items):
+    self.max_items = max_items
+    self.item_count = 0
+
+    @classmethod
+    def from_crawler(cls, crawler):
+    max_items = crawler.settings.getint('CLOSESPIDER_ITEMCOUNT')
+    if not max_items:
+      raise NotConfigured
+    o = cls(max_items)
+    crawler.signals.connect(o.spider_closed, signal=signals.spider_closed)
+    return o
+
+    def process_spider_output(self, response, result, spider):
+    for i in result:
+      yield i
+      self.item_count += 1
+      if self.item_count >= self.max_items:
+        spider.crawler.engine.close_spider(spider, 'itemcount reached')
+
+    def spider_closed(self, spider):
+    spider.logger.info("Spider closed after scraping %d items", self.item_count)
+
+DOWNLOADER_MIDDLEWARES = {
+    # ... your other middlewares
+    'xsscrapy.middlewares.ItemCountMiddleware': 1500, 
+}
