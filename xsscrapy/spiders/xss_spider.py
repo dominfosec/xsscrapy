@@ -7,6 +7,8 @@ from scrapy.selector import Selector
 from xsscrapy.items import inj_resp
 from xsscrapy.loginform import fill_login_form
 from urllib.parse import urlparse, parse_qsl, urljoin, urlunparse, urlunsplit
+from scrapy.exceptions import IgnoreRequest, NotConfigured
+from twisted.internet.error import DNSLookupError, TimeoutError, TCPTimedOutError, ConnectError
 
 from scrapy.http.cookies import CookieJar
 from http.cookiejar import Cookie
@@ -160,13 +162,14 @@ class XSSspider(CrawlSpider):
     def parse_resp(self, response):
         ''' The main response parsing function, called on every response from a new URL
         Checks for XSS in headers and url'''
-        reqs = []
-        orig_url = response.url
-        body = response.body
-        parsed_url = urlparse(orig_url)
+        try:
+            reqs = []
+            orig_url = response.url
+            body = response.body
+            parsed_url = urlparse(orig_url)
         # parse_qsl rather than parse_qs in order to preserve order
         # will always return a list
-        url_params = parse_qsl(parsed_url.query, keep_blank_values=True)
+            url_params = parse_qsl(parsed_url.query, keep_blank_values=True)
 
         try:
             # soupparser will handle broken HTML better (like identical attributes) but god damn will you pay for it
