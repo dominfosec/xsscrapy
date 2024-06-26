@@ -40,3 +40,4 @@ CONCURRENT_REQUESTS = 30
 
 # If you get bloom filter problems, increase this number
 bloomfilterSize = 300000
+CLOSESPIDER_ITEMCOUNT = 1500
