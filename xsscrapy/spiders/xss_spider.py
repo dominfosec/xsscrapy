@@ -52,6 +52,8 @@ class XSSspider(CrawlSpider):
         self.login_user = kwargs.get('user')
         self.login_cookie_key = kwargs.get('cookie_key')
         self.login_cookie_value = kwargs.get('cookie_value')
+        self.open_redirects_file = "open-redir.txt"  # Output file for open redirects
+
 
         # Turn Nones to Nones
         if self.login_user == 'None':
@@ -192,7 +194,12 @@ class XSSspider(CrawlSpider):
 
         # Edit a few select headers with injection string and resend request
         # Left room to add more header injections too
-        
+         # Check for 30x redirects
+        if 300 <= response.status < 400:
+            with open(self.open_redirects_file, 'a') as f:
+                f.write(response.url + '\n')
+            self.logger.info(f"Found 30x redirect: {response.url}")
+            return  # No further processing for this request
 
         # Fill out forms with xss strings
         if forms:
