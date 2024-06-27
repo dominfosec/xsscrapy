@@ -54,7 +54,12 @@ class XSSspider(CrawlSpider):
         self.login_cookie_value = kwargs.get('cookie_value')
         self.open_redirects_file = "open-redir.txt"  # Output file for open redirects
         self.redirected_urls = set()  # Track source URLs that have caused redirects
-
+        
+        self.start_urls = [kwargs.get('url')]
+        self.url = kwargs.get('url')  # Define self.url here
+        hostname = urlparse(self.start_urls[0]).hostname
+        # With subdomains
+        self.allowed_domains = [hostname] 
 
         # Turn Nones to Nones
         if self.login_user == 'None':
@@ -86,7 +91,7 @@ class XSSspider(CrawlSpider):
         self.base_url = u.scheme+'://'+u.netloc
         robots_url = self.base_url+'/robots.txt'
         robot_req = Request(robots_url, callback=self.robot_parser)
-        fourohfour_url = self.start_urls[0]+'/requestXaX404'
+        fourohfour_url = self.url[0]+'/requestXaX404'
         fourohfour_req = Request(fourohfour_url, callback=self.parse_resp)
 
         reqs = self.parse_resp(response)
