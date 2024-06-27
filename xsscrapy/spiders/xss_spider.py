@@ -53,6 +53,7 @@ class XSSspider(CrawlSpider):
         self.login_cookie_key = kwargs.get('cookie_key')
         self.login_cookie_value = kwargs.get('cookie_value')
         self.open_redirects_file = "open-redir.txt"  # Output file for open redirects
+        self.redirected_urls = set()  # Track source URLs that have caused redirects
 
 
         # Turn Nones to Nones
@@ -199,7 +200,15 @@ class XSSspider(CrawlSpider):
             with open(self.open_redirects_file, 'a') as f:
                 f.write(response.url + '\n')
             self.logger.info(f"Found 30x redirect: {response.url}")
-            return  # No further processing for this request
+            # Add the source URL to the redirected_urls set
+            self.redirected_urls.add(orig_url)
+            # If the source URL has already been tested for XSS, skip further testing
+            if orig_url in self.tested_params:
+                return  # Stop processing this response (redirect)
+        elif orig_url in self.redirected_urls:
+            # Skip the response if the original URL already caused a redirect
+            return 
+              # No further processing for this request
 
         # Fill out forms with xss strings
         if forms:
