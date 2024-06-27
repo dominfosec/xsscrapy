@@ -178,10 +178,10 @@ class XSSspider(CrawlSpider):
             # soupparser will handle broken HTML better (like identical attributes) but god damn will you pay for it
             # in CPU cycles. Slows the script to a crawl and introduces more bugs.
             doc = lxml.html.fromstring(body, base_url=orig_url)
-        except lxml.etree.ParserError:
+            except lxml.etree.ParserError:
             self.log('ParserError from lxml on %s' % orig_url)
             return []
-        except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
+            except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
             self.log(f"Error parsing {orig_url}: {e}", level=ERROR)
             return []
 
