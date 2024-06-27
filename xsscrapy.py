@@ -28,16 +28,54 @@ def main():
     rate = args.ratelimit
     if rate not in [None, '0']:
         rate = str(60 / float(rate))
+
     try:
-        cookie_key = args.cookie.split('=',1)[0] if args.cookie else None
-        cookie_value = ''.join(args.cookie.split('=',1)[1:]) if args.cookie else None
-        execute(['scrapy', 'crawl', 'xsscrapy',
-                 '-a', 'url=%s' % args.url, '-a', 'user=%s' % args.login, '-a',
-                 'pw=%s' % args.password, '-a', 'basic=%s' % args.basic,
-                 '-a', 'cookie_key=%s' % cookie_key, '-a', 'cookie_value=%s' % cookie_value,
-                 '-s', 'CONCURRENT_REQUESTS=%s' % args.connections,
-                 '-s', 'DOWNLOAD_DELAY=%s' % rate])
+        # Input validation for URL format (if single URL provided)
+        if args.url and not args.url.startswith(("http://", "https://")):
+            print("Error: Invalid URL format. Please use http:// or https://.")
+            sys.exit(1)
+        
+        # Input validation for connection limit
+        try:
+            int(args.connections)
+        except ValueError:
+            print("Error: Invalid connections value. Please use an integer.")
+            sys.exit(1)
+
+        cookie_key = args.cookie.split('=', 1)[0] if args.cookie else None
+        cookie_value = ''.join(args.cookie.split('=', 1)[1:]) if args.cookie else None
+
+        # Handle list of URLs
+        if args.file:
+            with open(args.file, 'r') as f:
+                start_urls = [line.strip() for line in f]
+        else:
+            start_urls = [args.url]
+
+        # Start the spider with the list of URLs
+        execute([
+            'scrapy', 'crawl', 'xsscrapy',
+            '-a', 'start_urls=' + str(start_urls),
+            '-a', 'user=%s' % args.login,
+            '-a', 'pw=%s' % args.password,
+            '-a', 'basic=%s' % args.basic,
+            '-a', 'cookie_key=%s' % cookie_key,
+            '-a', 'cookie_value=%s' % cookie_value,
+            '-s', 'CONCURRENT_REQUESTS=%s' % args.connections,
+            '-s', 'DOWNLOAD_DELAY=%s' % rate
+        ])
+
     except KeyboardInterrupt:
         sys.exit()
 
-main()
+    except scrapy.exceptions.UsageError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
