@@ -167,7 +167,6 @@ class XSSspider(CrawlSpider):
             self.log('Added robots.txt disallowed URL to our queue: '+r.url)
         return reqs
     
-    
     def parse_resp(self, response):
         ''' The main response parsing function, called on every response from a new URL
         Checks for XSS in headers and url'''
